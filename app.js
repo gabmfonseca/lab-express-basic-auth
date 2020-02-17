@@ -7,8 +7,12 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const sassMiddleware = require('node-sass-middleware');
 const serveFavicon = require('serve-favicon');
-
+const expressSession = require('express-session');
+const ConnectMongo = require('connect-mongo');
+const mongoStore = ConnectMongo(expressSession);
+const mongoose = require('mongoose');
 const indexRouter = require('./routes/index');
+const authenticationRouter = require('./routes/authentication');
 
 const app = express();
 
@@ -32,7 +36,30 @@ app.use(
   })
 );
 
+app.use(
+  expressSession({
+    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: false,
+    cookie: {
+      maxAge: 15 * 24 * 60 * 60 * 1000 // 15d x 24h x 60m x 60s x 1000ms
+    },
+    store: new mongoStore({
+      mongooseConnection: mongoose.connection,
+      ttl: 60 * 60
+    })
+  })
+);
+
+const deserializeUser = require('./middleware/deserialize-user');
+//const passUser = require('./middleware/pass-user');
+
+app.use(deserializeUser);
+//app.use(passUser);
+
 app.use('/', indexRouter);
+
+app.use('/authentication', authenticationRouter);
 
 // Catch missing routes and forward to error handler
 app.use((req, res, next) => {
