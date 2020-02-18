@@ -3,7 +3,7 @@
 // User model goes here
 const mongoose = require('mongoose');
 
-const schema = new mongoose.Schema({
+const userSchema = new mongoose.Schema({
   username: {
     type: String,
     unique: true,
@@ -12,7 +12,8 @@ const schema = new mongoose.Schema({
   passwordHash: {
     type: String,
     required: true
-  }
+  },
+  name: String
 });
 
-module.exports = mongoose.model('User', schema);
+module.exports = mongoose.model('User', userSchema);

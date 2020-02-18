@@ -4,6 +4,8 @@ const User = require('../models/user');
 
 const deserializeUser = (req, res, next) => {
   const userId = req.session.userId;
+
+  // if the user is logged in, we look for the him at the database
   if (userId) {
     User.findById(userId)
       .then(signedUser => {

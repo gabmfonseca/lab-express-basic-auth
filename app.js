@@ -9,11 +9,11 @@ const sassMiddleware = require('node-sass-middleware');
 const serveFavicon = require('serve-favicon');
 const expressSession = require('express-session');
 const ConnectMongo = require('connect-mongo');
-const mongoStore = ConnectMongo(expressSession);
+const MongoStore = ConnectMongo(expressSession);
 const mongoose = require('mongoose');
 const indexRouter = require('./routes/index');
 const authenticationRouter = require('./routes/authentication');
-
+const hbs = require('hbs');
 const app = express();
 
 // Setup view engine
@@ -26,6 +26,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(serveFavicon(join(__dirname, 'public/images', 'favicon.ico')));
 app.use(express.static(join(__dirname, 'public')));
+hbs.registerPartials(join(__dirname, 'views/partials'));
 app.use(
   sassMiddleware({
     src: join(__dirname, 'public'),
@@ -44,7 +45,7 @@ app.use(
     cookie: {
       maxAge: 15 * 24 * 60 * 60 * 1000 // 15d x 24h x 60m x 60s x 1000ms
     },
-    store: new mongoStore({
+    store: new MongoStore({
       mongooseConnection: mongoose.connection,
       ttl: 60 * 60
     })

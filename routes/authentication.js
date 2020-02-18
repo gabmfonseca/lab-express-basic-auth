@@ -13,17 +13,19 @@ router.get('/sign-up', (req, res, next) => {
 });
 
 router.post('/sign-up', (req, res, next) => {
-  const { username, password } = req.body;
+  const { name, username, password } = req.body;
 
   bcryptjs
     .hash(password, 10)
     .then(hash => {
       return User.create({
+        name,
         username,
         passwordHash: hash
       });
     })
     .then(user => {
+      // set the session after the user created the account
       req.session.userId = user._id;
       res.redirect('/');
     })
@@ -76,7 +78,25 @@ router.get('/profile', routeGuard, (req, res, next) => {
   res.render('authentication/profile');
 });
 
+router.get('/profile/edit', routeGuard, (req, res, next) => {
+  res.render('authentication/edit');
+});
+
+router.post('/profile/edit', routeGuard, (req, res, next) => {
+  const { name } = req.body;
+  const userId = req.session.userId;
+  User.findByIdAndUpdate(userId, { name })
+    .then(userUpdate => {
+      console.log("User's name was updated", userUpdate);
+      res.redirect('/authentication/profile');
+    })
+    .catch(error => {
+      next(error);
+    });
+});
+
 router.post('/sign-out', (req, res, next) => {
+  // destroy the session object at MongoDB
   req.session.destroy();
   res.redirect('/');
 });
